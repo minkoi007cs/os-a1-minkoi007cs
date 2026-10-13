@@ -4,6 +4,7 @@
 #include "riscv.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "uproc.h"
 #include "defs.h"
 
 struct cpu cpus[NCPU];
@@ -124,6 +125,7 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
+  p->tracemask = 0;
 
   // Allocate a trapframe page.
   if ((p->trapframe = (struct trapframe *)kalloc()) == 0) {
@@ -167,6 +169,7 @@ freeproc(struct proc *p)
   p->chan = 0;
   p->killed = 0;
   p->xstate = 0;
+  p->tracemask = 0;
   p->state = UNUSED;
 }
 
@@ -274,6 +277,7 @@ kfork(void)
     return -1;
   }
   np->sz = p->sz;
+  np->tracemask = p->tracemask;
 
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
@@ -700,4 +704,57 @@ procdump(void)
     printk("%d %s %s", p->pid, state, p->name);
     printk("\n");
   }
+}
+
+
+// A process-table count, including USED and ZOMBIE entries.
+uint64
+proc_count(void)
+{
+  uint64 count = 0;
+  for (struct proc *p = proc; p < proc + NPROC; p++) {
+    acquire(&p->lock);
+    if (p->state != UNUSED)
+      count++;
+    release(&p->lock);
+  }
+  return count;
+}
+
+// Snapshot one entry at a time: never copy to user memory under spinlocks.
+// wait_lock keeps the parent pointer and its lifetime stable. Its pid cannot
+// change until it is freed, which also requires wait_lock for a parent.
+int
+proc_snapshot(uint64 address, int max)
+{
+  if (max < 0)
+    return -1;
+  struct proc *caller = myproc();
+  int count = 0;
+  for (struct proc *p = proc; p < proc + NPROC && count < max; p++) {
+    struct uproc row;
+    int present = 0;
+    acquire(&wait_lock);
+    acquire(&p->lock);
+    if (p->state != UNUSED) {
+      memset(&row, 0, sizeof(row));
+      row.pid = p->pid;
+      row.ppid = p->parent ? p->parent->pid : 0;
+      row.state = p->state;
+      row.sz = p->sz;
+      safestrcpy(row.name, p->name, sizeof(row.name));
+      present = 1;
+    }
+    release(&p->lock);
+    release(&wait_lock);
+    if (present) {
+      uint64 destination = address + (uint64)count * sizeof(row);
+      if (destination < address ||
+          copyout(caller->pagetable, caller->sz, destination,
+                  (char *)&row, sizeof(row)) < 0)
+        return -1;
+      count++;
+    }
+  }
+  return count;
 }

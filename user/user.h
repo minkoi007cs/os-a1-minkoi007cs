@@ -48,3 +48,9 @@ void printf(const char *, ...) __attribute__((format(printf, 1, 2)));
 // umalloc.c
 void *malloc(uint);
 void free(void *);
+
+struct sysinfo;
+struct uproc;
+int trace(int);
+int sysinfo(struct sysinfo *);
+int getprocs(struct uproc *, int);

@@ -89,6 +89,10 @@ CFLAGS += -fno-pie -nopie
 endif
 
 LDFLAGS = -z max-page-size=4096
+# New binutils diagnoses the starter's intentional RWX segments (including
+# forktest's -N link). Keep compiler warnings fatal, but avoid this inherited
+# ELF diagnostic when the linker supports the option.
+LDFLAGS += $(shell $(LD) --help 2>/dev/null | grep -q -- '--no-warn-rwx-segments' && echo --no-warn-rwx-segments)
 
 $K/kernel: $(OBJS) $K/kernel.ld
 	$(LD) $(LDFLAGS) -T $K/kernel.ld -o $K/kernel $(OBJS) 
@@ -150,6 +154,12 @@ UPROGS=\
 	$U/_forphan\
 	$U/_dorphan\
 	$U/_sync\
+	$U/_sleep\
+	$U/_find\
+	$U/_xargs\
+	$U/_trace\
+	$U/_ps\
+	$U/_a1test\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

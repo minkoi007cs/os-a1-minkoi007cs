@@ -184,3 +184,9 @@ void            virtio_disk_intr(void);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x) / sizeof((x)[0]))
+
+// Assignment 1: synchronized kernel snapshots.
+uint64 free_memory(void);
+uint64 proc_count(void);
+uint64 open_file_count(void);
+int proc_snapshot(uint64, int);
