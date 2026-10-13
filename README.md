@@ -62,6 +62,6 @@ The Oct 10 Canvas announcement supersedes the handout's `make grade` instruction
 - [Deadline / grading update](https://kent.instructure.com/courses/137884/discussion_topics/1243802)
 - [MIT xv6 book](https://pdos.csail.mit.edu/6.1810/2025/xv6/book-riscv-rev5.pdf), particularly process/file-descriptor interfaces, memory allocation, and syscall arguments.
 
-Submission is the repository URL in Canvas, with the final commit tagged `a1-submit`. `time.txt` must contain the student's actual hours as one integer; it must be supplied accurately before tagging the final submission.
+Submission is only the repository URL in Canvas, with the final commit tagged `a1-submit`. The handout says that if the tag is missing, staff grade the last commit on `main` pushed before the deadline. The requested tag remains the recommended way to identify the intended commit. `time.txt` must contain the student's actual hours as one integer; it must be supplied accurately before submission. The updated deadline is October 14, 2026 at 11:59 PM Eastern time.
 
 The original MIT README and license are retained.

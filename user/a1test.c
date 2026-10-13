@@ -88,9 +88,9 @@ static void
 utilities(void)
 {
   char *s0[] = {"sleep", "0", 0};
-  int start = uptime();
   check(capture(s0, "") == 0 && output[0] == 0, "sleep zero");
   char *s2[] = {"sleep", "2", 0};
+  int start = uptime();
   check(capture(s2, "") == 0 && uptime() - start >= 2, "sleep ticks");
   char *bad[] = {"sleep", 0, 0, 0};
   check(capture(bad, "") == 1 && !strcmp(output, "usage: sleep <ticks>\n"), "sleep missing");
@@ -123,6 +123,17 @@ utilities(void)
   check(capture(root, "") == 0 && !strcmp(output, "/a1tree\n"), "find root slash");
   char *missing[] = {"find", "a1missing", "*", 0};
   check(capture(missing, "") == 1 && !strcmp(output, "find: cannot open a1missing\n"), "find missing directory");
+  check(mknod("a1tree/device", 1, 1) == 0, "find device fixture");
+  char *device[] = {"find", "a1tree", "device", "-type", "f", 0};
+  check(capture(device, "") == 0 && !strcmp(output, "a1tree/device\n"), "find -type f includes T_DEVICE");
+  fd = open("a1tree/abcdefghijklmn", O_CREATE | O_WRONLY);
+  check(fd >= 0, "find full DIRSIZ fixture"); close(fd);
+  char *full[] = {"find", "a1tree", "abc**mn", 0};
+  check(capture(full, "") == 0 && !strcmp(output, "a1tree/abcdefghijklmn\n"), "find full DIRSIZ name and consecutive stars");
+  fd = open("a1tree/a?b", O_CREATE | O_WRONLY);
+  check(fd >= 0, "find literal punctuation fixture"); close(fd);
+  char *literal[] = {"find", "a1tree", "a?b", 0};
+  check(capture(literal, "") == 0 && !strcmp(output, "a1tree/a?b\n"), "find only star is special");
   char path[MAXPATH] = "a1tree";
   for (int i = 0; i < 52; i++) {
     strcpy(path + strlen(path), "/d");
@@ -151,6 +162,13 @@ utilities(void)
   for (int i = 0; i < 30; i++) {input[2*i]='q'; input[2*i+1]=' ';}
   input[60] = 0;
   check(capture(xmax, input) == 0 && contains(output, "argc=32"), "xargs exact MAXARG actual arguments");
+  input[60] = 'q'; input[61] = '\n'; input[62] = 0;
+  check(capture(xmax, input) == 0 && contains(output, "argc=32") &&
+        contains(output, "\nargc=3 q\n"), "xargs final partial batch after MAXARG");
+  char *xover[] = {"xargs", "a1test", "args", 0};
+  check(capture(xover, input) == 1 && !strcmp(output, "xargs: too many arguments\n"), "xargs rejects overfull default line");
+  char *xone[] = {"xargs", "-n", "1", "echo", 0};
+  check(capture(xone, "a\t\nb\n") == 0 && !strcmp(output, "a\nb\n"), "xargs -n 1 and EOF delimiter do not add empty run");
   char *xlong[] = {"xargs", "a1test", "args", 0};
   char *longword = malloc(901);
   check(longword != 0, "long word allocation");
@@ -166,6 +184,7 @@ information(void)
   struct sysinfo before, after;
   check(sysinfo(&before) == 0, "sysinfo basic");
   check(sysinfo((void *)-1ULL) == -1, "sysinfo bad pointer");
+  check(sysinfo((void *)0) == -1, "sysinfo cannot overwrite read-only text");
   check(before.freemem > 0 && before.freemem % 4096 == 0, "sysinfo free bytes");
   char *memory = sbrk(3 * 4096);
   check(memory != SBRK_ERROR, "allocate memory");
@@ -186,7 +205,10 @@ information(void)
   check(getprocs(rows, -1) == -1, "getprocs negative max");
   check(getprocs((void *)-1ULL, 0) == 0, "getprocs zero max does not dereference");
   check(getprocs((void *)-1ULL, 1) == -1, "getprocs bad pointer");
+  check(getprocs((void *)0, 1) == -1, "getprocs cannot overwrite read-only text");
+  memset(rows, 0x5a, sizeof(rows));
   check(getprocs(rows, 1) == 1 && rows[0].pid == 1 && rows[0].ppid == 0, "getprocs partial and table order");
+  check(rows[1].pid == 0x5a5a5a5a, "getprocs max prevents overwrite of next row");
   int n = getprocs(rows, 2147483647), self = 0;
   check(n >= 3 && n <= NPROC, "getprocs large max");
   for (int i = 0; i < n; i++) {
@@ -217,6 +239,19 @@ information(void)
   check(found, "getprocs correct parent pid");
   close(control[1]); check(wait(0) == child, "reap counted child");
   check(sysinfo(&after) == 0 && after.nproc == before.nproc, "sysinfo after wait");
+
+  child = fork(); check(child >= 0, "zombie count fork");
+  if (child == 0) exit(0);
+  found = 0;
+  for (int attempt = 0; attempt < 100 && !found; attempt++) {
+    n = getprocs(rows, NPROC);
+    for (int i = 0; i < n; i++)
+      if (rows[i].pid == child && rows[i].state == 5) found = 1;
+    if (!found) pause(1);
+  }
+  check(found, "getprocs includes zombie before wait");
+  check(sysinfo(&after) == 0 && after.nproc == before.nproc + 1, "sysinfo counts zombie before wait");
+  check(wait(0) == child, "reap zombie");
 
   child = fork(); check(child >= 0, "stress fork");
   if (child == 0) {
@@ -252,6 +287,32 @@ tracing(void)
   exit(1);
 }
 
+static void
+tracepaths(void)
+{
+  trace((1 << SYS_open) | (1 << SYS_mkdir) | (1 << SYS_chdir) |
+        (1 << SYS_mknod) | (1 << SYS_link) | (1 << SYS_unlink) |
+        (1 << SYS_exec) | (1 << SYS_getpid) | (1 << SYS_uptime) |
+        (1 << SYS_sync) | (1 << SYS_trace));
+  check(mkdir("a1trace") == 0, "trace mkdir");
+  check(chdir("a1trace") == 0, "trace chdir");
+  check(mknod("node", 1, 1) == 0, "trace mknod");
+  int fd = open("file", O_CREATE | O_WRONLY);
+  check(fd >= 0, "trace open"); close(fd);
+  check(link("file", "linked") == 0, "trace link");
+  check(unlink("linked") == 0, "trace unlink");
+  char *bad = (char *)-1ULL;
+  check(chdir(bad) == -1 && mkdir(bad) == -1 && mknod(bad, 1, 1) == -1 &&
+        link(bad, "bad") == -1 && unlink(bad) == -1, "trace bad path pointers");
+  char *args[] = {"echo", 0};
+  check(exec(bad, args) == -1, "trace invalid exec path");
+  getpid(); uptime(); sync();
+  trace(0);
+  getpid();
+  printf("TRACE_OFF_OK\n");
+  exit(0);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -262,6 +323,7 @@ main(int argc, char **argv)
   }
   if (argc > 1 && !strcmp(argv[1], "ret7")) {printf("ret7\n");exit(7);}
   if (argc > 1 && !strcmp(argv[1], "trace")) {tracing(); exit(1);}
+  if (argc > 1 && !strcmp(argv[1], "tracepaths")) {tracepaths(); exit(1);}
   utilities();
   information();
   printf("A1 TESTS PASSED (%d checks)\n", checks);
