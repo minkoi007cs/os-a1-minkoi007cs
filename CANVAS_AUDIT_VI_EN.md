@@ -49,10 +49,10 @@ Logs: `OS_Assignment_1_Functional_Tests.txt` và `OS_Assignment_1_Xv6_Regression
 
 ## Hoàn thiện mã và nộp bài / Implementation and submission status
 
-Mã bài tập hoàn chỉnh trong phạm vi đã đối chiếu và kiểm thử. Theo yêu cầu trước đó, chưa nộp Canvas, chưa thêm số giờ vào `time.txt` và chưa tạo tag `a1-submit`. Số giờ phải do người học cung cấp đúng thực tế.
+Mã bài tập hoàn chỉnh trong phạm vi đã đối chiếu và kiểm thử. Ngày 13/10/2026, người học cung cấp thời gian thực tế là **2 giờ**. `time.txt` ở root được thêm với nội dung `2`; bản cuối được chuẩn bị để push lên GitHub và gắn tag `a1-submit`. Chưa nộp Canvas.
 
 Đề yêu cầu repo public `os-a1-<username>`, giữ lịch sử starter, `time.txt` ở root và nộp duy nhất link repo. Tag `a1-submit` xác định commit muốn chấm; nếu thiếu tag, đề nói staff chấm commit cuối trên `main` đã push trước hạn. Hạn hiện tại: **14/10/2026, 11:59 PM giờ New York**.
 
-Repo GitHub đã có mã triển khai từ bước trước. Bản ZIP trong outputs được cập nhật với test và báo cáo lần kiểm tra này; thay đổi của lần kiểm tra này chỉ lưu tại máy, chưa push thêm.
+Repo và bản ZIP cuối bao gồm mã triển khai, test mở rộng, báo cáo lần kiểm tra thứ hai và `time.txt`. Bản cuối được push lên `main` và tag `a1-submit` để xác định commit muốn chấm; Canvas chỉ cần link repository.
 
 This is evidence of reviewed and tested behavior, not an official grade or a proof that no undiscovered defect can exist. The final grade depends on the TA's review.

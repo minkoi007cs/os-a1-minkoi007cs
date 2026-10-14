@@ -27,4 +27,4 @@ The supplied starter does not include `grade-a1`. The Oct 10 Canvas notice says 
 
 Mã bài tập đã hoàn thành. Build sạch, kiểm tra riêng và `usertests -q` trên bản cuối đều đạt. Có kiểm tra cây sâu 52 tầng, input sai, giới hạn đối số, con trỏ không hợp lệ và nhiều process fork/exit đồng thời.
 
-Theo yêu cầu của người dùng, phần nộp bài không được thực hiện: chưa gửi bài trên Canvas, chưa tạo tag `a1-submit`, và chưa khai số giờ vào `time.txt`. Những bước này thuộc khâu nộp; mã và kiểm thử đã sẵn sàng để học, xem lại và chạy tại máy.
+Trước khi chuẩn bị repository để nộp, bài chưa được gửi trên Canvas và chưa có tag hoặc số giờ. Ngày 13/10/2026, người dùng cung cấp thời gian thực tế là 2 giờ: `time.txt` được thêm với nội dung `2`, và bản cuối được chuẩn bị để push lên main và gắn tag `a1-submit`. Chưa gửi bài trên Canvas.
