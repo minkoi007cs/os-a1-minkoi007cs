@@ -49,7 +49,7 @@ Logs: `OS_Assignment_1_Functional_Tests.txt` và `OS_Assignment_1_Xv6_Regression
 
 ## Hoàn thiện mã và nộp bài / Implementation and submission status
 
-Mã bài tập hoàn chỉnh trong phạm vi đã đối chiếu và kiểm thử. Ngày 13/10/2026, người học cung cấp thời gian thực tế là **2 giờ**. `time.txt` ở root được thêm với nội dung `2`; bản cuối được chuẩn bị để push lên GitHub và gắn tag `a1-submit`. Chưa nộp Canvas.
+Mã bài tập hoàn chỉnh trong phạm vi đã đối chiếu và kiểm thử. Ngày 13/10/2026, người học điều chỉnh thời gian thực tế thành **khoảng 1,5 giờ**. Vì đề yêu cầu một số nguyên, `time.txt` ở root chứa `2`, làm tròn đến giờ gần nhất. Ghi chú giữ rõ thời gian chưa làm tròn. Bản cuối được push lên GitHub và gắn tag `a1-submit`. Chưa nộp Canvas.
 
 Đề yêu cầu repo public `os-a1-<username>`, giữ lịch sử starter, `time.txt` ở root và nộp duy nhất link repo. Tag `a1-submit` xác định commit muốn chấm; nếu thiếu tag, đề nói staff chấm commit cuối trên `main` đã push trước hạn. Hạn hiện tại: **14/10/2026, 11:59 PM giờ New York**.
 

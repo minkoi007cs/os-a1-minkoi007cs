@@ -64,4 +64,6 @@ The Oct 10 Canvas announcement supersedes the handout's `make grade` instruction
 
 Submission is only the repository URL in Canvas, with the final commit tagged `a1-submit`. The handout says that if the tag is missing, staff grade the last commit on `main` pushed before the deadline. The requested tag remains the recommended way to identify the intended commit. `time.txt` must contain the student's actual hours as one integer; it must be supplied accurately before submission. The updated deadline is October 14, 2026 at 11:59 PM Eastern time.
 
+Time spent: approximately 1.5 hours, as reported by the student. Since the handout requires one integer in `time.txt`, the file records `2`, rounded to the nearest whole hour.
+
 The original MIT README and license are retained.
